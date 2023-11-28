@@ -1,18 +1,29 @@
 package blogposts
 
 import (
+	"io"
 	"io/fs"
-	"testing/fstest"
+	"strings"
 )
 
-func NewPostsFromFS(files fstest.MapFS) []Post {
-	dir, _ := fs.ReadDir(files, ".")
+func NewPostsFromFS(fileSystem fs.FS) []Post {
+	dir, _ := fs.ReadDir(fileSystem, ".")
 	var posts []Post
-	for range dir {
-		posts = append(posts, Post{})
+	for _, f := range dir {
+		posts = append(posts, makePostFromFile(fileSystem, f))
 	}
 	return posts
 }
 
+func makePostFromFile(fileSystem fs.FS, f fs.DirEntry) Post {
+	blogFile, _ := fileSystem.Open(f.Name())
+	fileContents, _ := io.ReadAll(blogFile)
+	title := strings.TrimPrefix(string(fileContents), "Title: ")
+	return Post{
+		Title: title,
+	}
+}
+
 type Post struct {
+	Title string
 }
