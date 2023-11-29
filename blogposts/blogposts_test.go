@@ -8,10 +8,11 @@ import (
 	"testing/fstest"
 )
 
-func TestNewBlogPosts(t *testing.T) {
+func TestPostFromFS(t *testing.T) {
 	t.Run("Happy Path", func(t *testing.T) {
 		fs := fstest.MapFS{
-			"hello world.md": {Data: []byte("Title: Hello, TDD world!")},
+			"hello world.md": {Data: []byte(`Title: Hello, TDD world!
+Description: lol`)},
 			// "hello-world2.md": {Data: []byte("Title: Hello twitchy world")},
 		}
 
@@ -25,7 +26,10 @@ func TestNewBlogPosts(t *testing.T) {
 			t.Errorf("got %d posts, wanted %d posts", len(posts), len(fs))
 		}
 
-		expectedPost := blogposts.Post{Title: "Hello, TDD world!"}
+		expectedPost := blogposts.Post{
+			Title:       "Hello, TDD world!",
+			Description: "lol",
+		}
 		if posts[0] != expectedPost {
 			t.Errorf("got %#v, want %#v", posts[0], expectedPost)
 		}
