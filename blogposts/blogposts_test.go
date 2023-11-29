@@ -14,8 +14,10 @@ func TestPostFromFS(t *testing.T) {
 		fs := fstest.MapFS{
 			"hello world.md": {Data: []byte(`Title: Hello, TDD world!
 Description: lol
-Tags: tdd, go`)},
-			// "hello-world2.md": {Data: []byte("Title: Hello twitchy world")},
+Tags: tdd, go
+---
+Hello
+World`)},
 		}
 
 		posts, err := blogposts.PostsFromFS(fs)
@@ -32,6 +34,8 @@ Tags: tdd, go`)},
 			Title:       "Hello, TDD world!",
 			Description: "lol",
 			Tags:        []string{"tdd", "go"},
+			Body: `Hello
+World`,
 		})
 	})
 
@@ -54,7 +58,6 @@ func assertPost(t *testing.T, got, want blogposts.Post) {
 type FailingFS struct {
 }
 
-// Open implements fs.FS.
 func (FailingFS) Open(name string) (fs.File, error) {
 	return nil, errors.New("Oh no!")
 }
