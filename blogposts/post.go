@@ -6,6 +6,12 @@ import (
 	"strings"
 )
 
+const (
+	PostTitle = "Title: "
+	PostDesc  = "Description: "
+	PostTags  = "Tags: "
+)
+
 type Post struct {
 	Title       string
 	Description string
@@ -15,9 +21,9 @@ type Post struct {
 func newPost(blogFile io.Reader) Post {
 	scanner := bufio.NewScanner(blogFile)
 
-	title := readline(scanner, "Title: ")
-	description := readline(scanner, "Description: ")
-	tags := strings.Split(readline(scanner, "Tags: "), ", ")
+	title := readline(scanner, PostTitle)
+	description := readline(scanner, PostDesc)
+	tags := strings.Split(readline(scanner, PostTags), ", ")
 
 	return Post{
 		Title:       title,
