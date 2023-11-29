@@ -4,6 +4,7 @@ import (
 	"errors"
 	"io/fs"
 	"lgwt/blogposts"
+	"reflect"
 	"testing"
 	"testing/fstest"
 )
@@ -12,7 +13,8 @@ func TestPostFromFS(t *testing.T) {
 	t.Run("Happy Path", func(t *testing.T) {
 		fs := fstest.MapFS{
 			"hello world.md": {Data: []byte(`Title: Hello, TDD world!
-Description: lol`)},
+Description: lol
+Tags: tdd, go`)},
 			// "hello-world2.md": {Data: []byte("Title: Hello twitchy world")},
 		}
 
@@ -26,13 +28,11 @@ Description: lol`)},
 			t.Errorf("got %d posts, wanted %d posts", len(posts), len(fs))
 		}
 
-		expectedPost := blogposts.Post{
+		assertPost(t, posts[0], blogposts.Post{
 			Title:       "Hello, TDD world!",
 			Description: "lol",
-		}
-		if posts[0] != expectedPost {
-			t.Errorf("got %#v, want %#v", posts[0], expectedPost)
-		}
+			Tags:        []string{"tdd", "go"},
+		})
 	})
 
 	t.Run("Failing file system", func(t *testing.T) {
@@ -42,6 +42,13 @@ Description: lol`)},
 			t.Errorf("expcted an error, didn't get one")
 		}
 	})
+}
+
+func assertPost(t *testing.T, got, want blogposts.Post) {
+	t.Helper()
+	if !reflect.DeepEqual(got, want) {
+		t.Errorf("got %#v, want %#v", got, want)
+	}
 }
 
 type FailingFS struct {
