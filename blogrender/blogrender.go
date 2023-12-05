@@ -2,9 +2,9 @@ package blogrender
 
 import (
 	"embed"
-	"fmt"
 	"html/template"
 	"io"
+	"strings"
 )
 
 type Post struct {
@@ -14,23 +14,32 @@ type Post struct {
 	Tags        []string
 }
 
+func (p Post) SanitisedTitle() string {
+	return strings.ToLower(strings.Replace(p.Title, " ", "-", -1))
+}
+
 var (
 	//go:embed "templates/*"
 	postTemplates embed.FS
 )
 
-func Render(w io.Writer, p Post) error {
+type PostRenderer struct {
+	templ *template.Template
+}
+
+func NewPostRenderer() (*PostRenderer, error) {
 	templ, err := template.ParseFS(postTemplates, "templates/*.gohtml")
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	data, _ := postTemplates.ReadFile("templates/blog.gohtml")
-	fmt.Printf("%q", string(data))
+	return &PostRenderer{templ: templ}, nil
+}
 
-	if err := templ.Execute(w, p); err != nil {
-		return err
-	}
+func (r *PostRenderer) Render(w io.Writer, p Post) error {
+	return r.templ.ExecuteTemplate(w, "blog.gohtml", p)
+}
 
-	return nil
+func (r *PostRenderer) RenderIndex(w io.Writer, posts []Post) error {
+	return r.templ.ExecuteTemplate(w, "index.gohtml", posts)
 }
