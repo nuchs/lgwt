@@ -1,36 +1,49 @@
 package arrays
 
-func Sum(numbers []int) int {
-	sum := 0
-
-	for _, number := range numbers {
-		sum += number
-	}
-
-	return sum
+type Transaction struct {
+	From string
+	To   string
+	Sum  int
 }
 
-func SumAll(numbersToSum ...[]int) []int {
-	var sums []int
+func BalanceFor(transactions []Transaction, name string) int {
+	var balance int
 
-	for _, numbers := range numbersToSum {
-		sums = append(sums, Sum(numbers))
-	}
-
-	return sums
-}
-
-func SumAllTails(numbersToSum ...[]int) []int {
-	var sums []int
-
-	for _, numbers := range numbersToSum {
-		if len(numbers) == 0 {
-			sums = append(sums, 0)
-		} else {
-			tail := numbers[1:]
-			sums = append(sums, Sum(tail))
+	for _, t := range transactions {
+		if t.From == name {
+			balance -= t.Sum
+		}
+		if t.To == name {
+			balance += t.Sum
 		}
 	}
 
-	return sums
+	return balance
+}
+
+func Sum(numbers []int) int {
+	return Reduce(numbers, 0, func(a, b int) int { return a + b })
+}
+
+func SumAll(numbersToSum ...[]int) []int {
+	return Reduce(numbersToSum, make([]int, 0), func(a, b []int) []int { return append(a, Sum(b)) })
+}
+
+func SumAllTails(numbersToSum ...[]int) []int {
+	return Reduce(numbersToSum, make([]int, 0), func(a, b []int) []int {
+		if len(b) == 0 {
+			return append(a, 0)
+		} else {
+			tail := b[1:]
+			return append(a, Sum(tail))
+		}
+	})
+}
+
+func Reduce[T any](items []T, initial T, op func(T, T) T) T {
+	result := initial
+	for _, item := range items {
+		result = op(result, item)
+	}
+	return result
 }
