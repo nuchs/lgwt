@@ -1,24 +1,47 @@
 package arrays
 
+type Account struct {
+	Name    string
+	Balance int
+}
+
 type Transaction struct {
 	From string
 	To   string
 	Sum  int
 }
 
-func BalanceFor(transactions []Transaction, name string) int {
-	var balance int
+func NewTransaction(from, to Account, amount int) Transaction {
+	return Transaction{
+		From: from.Name,
+		To:   to.Name,
+		Sum:  amount,
+	}
+}
 
-	for _, t := range transactions {
-		if t.From == name {
-			balance -= t.Sum
-		}
-		if t.To == name {
-			balance += t.Sum
+func NewBalanceFor(account Account, transactions []Transaction) Account {
+	return Reduce(transactions, account, applyTransaction)
+}
+
+func applyTransaction(account Account, transaction Transaction) Account {
+	if account.Name == transaction.From {
+		account.Balance -= transaction.Sum
+	}
+	if account.Name == transaction.To {
+		account.Balance += transaction.Sum
+	}
+
+	return account
+}
+
+func Find[T any](haystack []T, magnet func(T) bool) (needle T, found bool) {
+	for _, item := range haystack {
+		if magnet(item) {
+			return item, true
 		}
 	}
 
-	return balance
+	return
 }
 
 func Sum(numbers []int) int {
@@ -40,7 +63,7 @@ func SumAllTails(numbersToSum ...[]int) []int {
 	})
 }
 
-func Reduce[T any](items []T, initial T, op func(T, T) T) T {
+func Reduce[T, U any](items []T, initial U, op func(U, T) U) U {
 	result := initial
 	for _, item := range items {
 		result = op(result, item)
